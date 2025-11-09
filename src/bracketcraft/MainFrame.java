@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The main window for the Bracket Maker application.
+ * The main window for the Bracket Maker application.a
  * Handles all UI setup, user interactions, and visual display of the tournament.
  */
 public class MainFrame extends javax.swing.JFrame {
