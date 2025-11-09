@@ -2,271 +2,171 @@ package bracketcraft;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.io.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * The main window for the Bracket Maker application.a
- * Handles all UI setup, user interactions, and visual display of the tournament.
- */
 public class MainFrame extends javax.swing.JFrame {
 
-    // --- Core Application Data ---
-    private Tournament currentTournament;
-    private List<JTextField> participantFields;
+    // --- UI Panels ---
+    private JPanel iconSidebar;
+    private JPanel infoContainerPanel; // The retractable panel
+    private CardLayout infoCardLayout;
+    private BracketDisplayPanel bracketDisplayPanel;
+    private BracketInfoPanel bracketInfoPanel;
+    private ParticipantsPanel participantsPanel;
 
-    // --- UI Components ---
-    private JMenuBar menuBar;
-    private JPanel setupPanel;
-    private JTextField tournamentNameField;
-    private JSpinner participantsSpinner;
-    private JButton createTournamentButton;
-    private JPanel participantEntryPanel;
-    private JScrollPane participantScrollPane;
-    private JButton generateBracketButton;
-    private JPanel bracketPanel;
+    // --- Animation and State ---
+    private boolean isInfoPanelVisible = true;
+    private Timer animationTimer;
+    private static final int INFO_PANEL_WIDTH = 350;
+    private static final int ANIMATION_DURATION_MS = 200;
 
-    /**
-     * Creates new form MainFrame.
-     */
     public MainFrame() {
-        this.participantFields = new ArrayList<>();
         initComponents();
     }
 
-    /**
-     * Initializes and lays out all user interface components.
-     */
     private void initComponents() {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Bracket Maker v1.0");
-        setMinimumSize(new Dimension(800, 600));
+        setTitle("BracketCraft");
+        setMinimumSize(new Dimension(1280, 720));
 
-        // --- Menu Bar Setup ---
-        menuBar = new JMenuBar();
-        JMenu fileMenu = new JMenu("File");
-        JMenuItem saveMenuItem = new JMenuItem("Save Tournament");
-        JMenuItem loadMenuItem = new JMenuItem("Load Tournament");
-        saveMenuItem.addActionListener(this::saveTournamentAction);
-        loadMenuItem.addActionListener(this::loadTournamentAction);
-        fileMenu.add(saveMenuItem);
-        fileMenu.add(loadMenuItem);
-        menuBar.add(fileMenu);
-        setJMenuBar(menuBar);
+        // --- Icon Sidebar ---
+        iconSidebar = new JPanel();
+        iconSidebar.setLayout(new BoxLayout(iconSidebar, BoxLayout.Y_AXIS));
+        iconSidebar.setBackground(AppTheme.BACKGROUND_SIDEBAR);
+        iconSidebar.setPreferredSize(new Dimension(70, 0));
+        iconSidebar.add(createNavButton("Bracket Information", "resources/bracket_icon.png"));
+        iconSidebar.add(createNavButton("Participants", "resources/participants_icon.png"));
+        iconSidebar.add(Box.createVerticalGlue());
+        iconSidebar.add(createNavButton("Settings", "resources/settings_icon.png"));
+        iconSidebar.add(createNavButton("Back", "resources/back_icon.png"));
+        getContentPane().add(iconSidebar, BorderLayout.WEST);
 
-        // --- Main Layout ---
-        getContentPane().setLayout(new BorderLayout(10, 10));
+        // --- Main Content Area ---
+        JPanel mainContentArea = new JPanel(new BorderLayout());
+        mainContentArea.setBackground(AppTheme.BACKGROUND_MAIN);
+        getContentPane().add(mainContentArea, BorderLayout.CENTER);
 
-        // --- 1. Tournament Setup Panel (Top) ---
-        setupPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        setupPanel.setBorder(BorderFactory.createTitledBorder("1. Tournament Setup"));
-        setupPanel.add(new JLabel("Tournament Name:"));
-        tournamentNameField = new JTextField(20);
-        setupPanel.add(tournamentNameField);
-        setupPanel.add(new JLabel("Number of Participants:"));
-        participantsSpinner = new JSpinner(new SpinnerNumberModel(2, 2, 128, 1));
-        setupPanel.add(participantsSpinner);
-        createTournamentButton = new JButton("Create");
-        createTournamentButton.addActionListener(this::createTournamentAction);
-        setupPanel.add(createTournamentButton);
-        getContentPane().add(setupPanel, BorderLayout.NORTH);
+        // --- Retractable Info Panel ---
+        infoCardLayout = new CardLayout();
+        infoContainerPanel = new JPanel(infoCardLayout);
+        infoContainerPanel.setPreferredSize(new Dimension(INFO_PANEL_WIDTH, 0));
 
-        // --- Center Panel (holds participant entry and bracket) ---
-        JPanel centerPanel = new JPanel(new BorderLayout(10, 10));
+        bracketInfoPanel = new BracketInfoPanel(this);
+        participantsPanel = new ParticipantsPanel(this);
+        infoContainerPanel.add(bracketInfoPanel, "Bracket Information");
+        infoContainerPanel.add(participantsPanel, "Participants");
 
-        // --- 2. Participant Entry Panel (Left) ---
-        JPanel leftPanel = new JPanel(new BorderLayout(0, 5));
-        leftPanel.setBorder(BorderFactory.createTitledBorder("2. Participants"));
-        participantEntryPanel = new JPanel();
-        participantEntryPanel.setLayout(new BoxLayout(participantEntryPanel, BoxLayout.Y_AXIS));
-        participantScrollPane = new JScrollPane(participantEntryPanel);
-        participantScrollPane.setPreferredSize(new Dimension(250, 0));
-        generateBracketButton = new JButton("Generate Bracket");
-        generateBracketButton.addActionListener(this::generateBracketAction);
-        generateBracketButton.setVisible(false);
-        leftPanel.add(participantScrollPane, BorderLayout.CENTER);
-        leftPanel.add(generateBracketButton, BorderLayout.SOUTH);
-        centerPanel.add(leftPanel, BorderLayout.WEST);
+        // --- Bracket Display Panel ---
+        bracketDisplayPanel = new BracketDisplayPanel();
+        mainContentArea.add(infoContainerPanel, BorderLayout.WEST);
+        mainContentArea.add(bracketDisplayPanel, BorderLayout.CENTER);
 
-        // --- 3. Bracket Panel (Center) ---
-        bracketPanel = new JPanel();
-        bracketPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 20, 20));
-        bracketPanel.setBorder(BorderFactory.createTitledBorder("3. Bracket"));
-        JScrollPane bracketScrollPane = new JScrollPane(bracketPanel);
-        centerPanel.add(bracketScrollPane, BorderLayout.CENTER);
-
-        getContentPane().add(centerPanel, BorderLayout.CENTER);
         pack();
-        setLocationRelativeTo(null); // Center the frame
+        setLocationRelativeTo(null);
     }
 
-    /**
-     * Generates text fields based on the number of participants selected.
-     */
-    private void createTournamentAction(ActionEvent e) {
-        int numParticipants = (Integer) participantsSpinner.getValue();
-        participantEntryPanel.removeAll();
-        participantFields.clear();
-
-        for (int i = 0; i < numParticipants; i++) {
-            JTextField field = new JTextField("Participant " + (i + 1), 15);
-            participantEntryPanel.add(field);
-            participantEntryPanel.add(Box.createRigidArea(new Dimension(0, 5)));
-            participantFields.add(field);
-        }
-
-        generateBracketButton.setVisible(true);
-        participantEntryPanel.revalidate();
-        participantEntryPanel.repaint();
-    }
-
-    /**
-     * Collects participant names, creates a Tournament object, and displays the bracket.
-     */
-    private void generateBracketAction(ActionEvent e) {
-        if (tournamentNameField.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please enter a tournament name.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
+    public void generateAndShowBracket(List<String> participantNames, String seedingOption) {
         List<Participant> participants = new ArrayList<>();
-        for (JTextField field : participantFields) {
-            participants.add(new Participant(field.getText().trim()));
+        participantNames.forEach(name -> participants.add(new Participant(name)));
+        Tournament newTournament = new Tournament(bracketInfoPanel.getBracketName(), participants);
+        newTournament.generateBracket(seedingOption);
+        bracketDisplayPanel.setSportName(bracketInfoPanel.getSportGameName());
+        bracketDisplayPanel.setTournament(newTournament);
+        if (isInfoPanelVisible) {
+            toggleInfoPanel();
         }
-
-        currentTournament = new Tournament(tournamentNameField.getText(), participants);
-        currentTournament.generateBracket();
-        displayBracket();
+    }
+    
+    public void showRulesDialog() {
+        RulesDialog rulesDialog = new RulesDialog(this);
+        rulesDialog.setVisible(true);
     }
 
-    /**
-     * Clears and redraws the entire bracket panel based on the current tournament state.
-     */
-    private void displayBracket() {
-        bracketPanel.removeAll();
-        if (currentTournament == null) {
-            bracketPanel.revalidate();
-            bracketPanel.repaint();
-            return;
-        }
+    private void toggleInfoPanel() {
+        if (animationTimer != null && animationTimer.isRunning()) return;
+        int startWidth = infoContainerPanel.getWidth();
+        int targetWidth = isInfoPanelVisible ? 0 : INFO_PANEL_WIDTH;
+        isInfoPanelVisible = !isInfoPanelVisible;
 
-        setTitle("Bracket Maker v1.0 - " + currentTournament.getTournamentName());
-
-        // Create a visual column for each round
-        for (int i = 0; i < currentTournament.getRounds().size(); i++) {
-            JPanel roundPanel = new JPanel();
-            roundPanel.setLayout(new BoxLayout(roundPanel, BoxLayout.Y_AXIS));
-            roundPanel.setBorder(BorderFactory.createTitledBorder("Round " + (i + 1)));
-
-            for (Match match : currentTournament.getRounds().get(i)) {
-                roundPanel.add(createMatchPanel(match));
-                roundPanel.add(Box.createRigidArea(new Dimension(0, 20))); // Spacer
+        long startTime = System.currentTimeMillis();
+        animationTimer = new Timer(5, e -> {
+            long elapsedTime = System.currentTimeMillis() - startTime;
+            double progress = (double) elapsedTime / ANIMATION_DURATION_MS;
+            if (progress >= 1.0) {
+                progress = 1.0;
+                ((Timer) e.getSource()).stop();
             }
-            bracketPanel.add(roundPanel);
-        }
-
-        bracketPanel.revalidate();
-        bracketPanel.repaint();
+            int newWidth = (int) (startWidth + (targetWidth - startWidth) * progress);
+            infoContainerPanel.setPreferredSize(new Dimension(newWidth, 0));
+            infoContainerPanel.revalidate();
+        });
+        animationTimer.start();
     }
 
-    /**
-     * Creates a single JPanel to visually represent one match.
-     */
-    private JPanel createMatchPanel(Match match) {
-        JPanel matchPanel = new JPanel(new BorderLayout(5, 5));
-        matchPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+    private JButton createNavButton(String toolTipText, String iconPath) {
+        JButton button = new JButton();
+        button.setToolTipText(toolTipText);
+        try {
+            ImageIcon icon = new ImageIcon(getClass().getResource(iconPath));
+            Image img = icon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
+            button.setIcon(new ImageIcon(img));
+        } catch (Exception e) {
+            System.err.println("Icon not found: " + iconPath);
+            button.setText(toolTipText.substring(0, 1));
+        }
 
-        Participant p1 = match.getParticipant1();
-        Participant p2 = match.getParticipant2();
+        // Style for transparency and hover
+        button.setBackground(AppTheme.BACKGROUND_SIDEBAR);
+        button.setOpaque(false);
+        button.setContentAreaFilled(false);
+        button.setBorderPainted(false);
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        button.setMaximumSize(new Dimension(Short.MAX_VALUE, 70));
 
-        JButton p1Button = new JButton(p1 != null ? p1.getName() : "TBD");
-        p1Button.setEnabled(p1 != null && p2 != null && match.getWinner() == null);
-        p1Button.addActionListener(e -> declareWinner(match, p1));
-
-        JButton p2Button = new JButton(p2 != null ? p2.getName() : "TBD");
-        p2Button.setEnabled(p1 != null && p2 != null && match.getWinner() == null);
-        p2Button.addActionListener(e -> declareWinner(match, p2));
-
-        matchPanel.add(p1Button, BorderLayout.NORTH);
-        matchPanel.add(new JLabel("vs", SwingConstants.CENTER), BorderLayout.CENTER);
-        matchPanel.add(p2Button, BorderLayout.SOUTH);
-
-        // Highlight the winner if one has been declared
-        if (match.getWinner() != null) {
-            if (match.getWinner() == p1) {
-                p1Button.setBackground(Color.GREEN);
-            } else if (match.getWinner() == p2) {
-                p2Button.setBackground(Color.GREEN);
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                button.setOpaque(true);
+                button.setBackground(AppTheme.BACKGROUND_SIDEBAR_HOVER);
             }
-        }
-        return matchPanel;
-    }
+            @Override
+            public void mouseExited(MouseEvent e) {
+                button.setOpaque(false);
+                button.setBackground(AppTheme.BACKGROUND_SIDEBAR);
+            }
+        });
 
-    /**
-     * Sets a match's winner and advances them to the next round.
-     */
-    private void declareWinner(Match match, Participant winner) {
-        match.setWinner(winner);
-        Match nextMatch = match.getNextMatch();
+        button.addActionListener(e -> {
+            Component currentVisible = null;
+            for(Component comp : infoContainerPanel.getComponents()){
+                if(comp.isVisible()){
+                    currentVisible = comp;
+                    break;
+                }
+            }
+            String currentPanelName = (currentVisible instanceof BracketInfoPanel) ? "Bracket Information" : "Participants";
 
-        if (nextMatch != null) {
-            // Fill the next available slot in the next match
-            if (nextMatch.getParticipant1() == null) {
-                nextMatch.setParticipant1(winner);
+            if (toolTipText.equals(currentPanelName) && isInfoPanelVisible) {
+                toggleInfoPanel();
+            } else if (!isInfoPanelVisible) {
+                infoCardLayout.show(infoContainerPanel, toolTipText);
+                toggleInfoPanel();
             } else {
-                nextMatch.setParticipant2(winner);
+                 infoCardLayout.show(infoContainerPanel, toolTipText);
             }
-        } else {
-            // This was the final match
-            JOptionPane.showMessageDialog(this, winner.getName() + " is the champion!", "Tournament Over", JOptionPane.INFORMATION_MESSAGE);
-        }
-
-        displayBracket(); // Refresh the UI
+        });
+        return button;
     }
 
-    /**
-     * Saves the current Tournament object to a file.
-     */
-    private void saveTournamentAction(ActionEvent e) {
-        if (currentTournament == null) return;
-        JFileChooser fileChooser = new JFileChooser();
-        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileChooser.getSelectedFile()))) {
-                oos.writeObject(currentTournament);
-            } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this, "Error saving file.", "Save Error", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }
-
-    /**
-     * Loads a Tournament object from a file and updates the UI.
-     */
-    private void loadTournamentAction(ActionEvent e) {
-        JFileChooser fileChooser = new JFileChooser();
-        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileChooser.getSelectedFile()))) {
-                currentTournament = (Tournament) ois.readObject();
-                tournamentNameField.setText(currentTournament.getTournamentName());
-                participantEntryPanel.removeAll();
-                generateBracketButton.setVisible(false);
-                displayBracket();
-            } catch (IOException | ClassNotFoundException ex) {
-                JOptionPane.showMessageDialog(this, "Error loading file.", "Load Error", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }
-
-    /**
-     * Main entry point of the application.
-     */
     public static void main(String args[]) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception ex) {
-            java.util.logging.Logger.getLogger(MainFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            // Handle exception
         }
         java.awt.EventQueue.invokeLater(() -> new MainFrame().setVisible(true));
     }
