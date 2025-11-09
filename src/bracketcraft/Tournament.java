@@ -6,8 +6,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Holds all data for a tournament, including participants and the bracket structure.
- * Contains the logic for generating a single-elimination bracket.
+ * Holds all data for a tournament and contains the logic for generating
+ * a single-elimination bracket based on a chosen seeding option.
  */
 public class Tournament implements Serializable {
     private final String tournamentName;
@@ -20,34 +20,36 @@ public class Tournament implements Serializable {
         this.rounds = new ArrayList<>();
     }
 
-    // --- Getters ---
-    public String getTournamentName() { return tournamentName; }
-    public List<List<Match>> getRounds() { return rounds; }
-
     /**
-     * Generates the bracket, correctly handling byes for participant counts
-     * that are not a power of two.
+     * Generates the entire bracket structure.
+     * @param seedingOption A string, either "Random" or "Seeded", that determines
+     *                      how the initial matchups are created.
      */
-    public void generateBracket() {
+    public void generateBracket(String seedingOption) {
         if (participants == null || participants.size() < 2) return;
-
         rounds.clear();
-        List<Participant> shuffledParticipants = new ArrayList<>(participants);
-        Collections.shuffle(shuffledParticipants);
 
-        int numParticipants = shuffledParticipants.size();
+        List<Participant> bracketParticipants = new ArrayList<>(participants);
+
+        // --- Seeding Logic ---
+        if ("Random".equalsIgnoreCase(seedingOption)) {
+            Collections.shuffle(bracketParticipants);
+        }
+        // If "Seeded", we use the list in its provided order (assuming it's pre-sorted).
+
+        int numParticipants = bracketParticipants.size();
         int bracketSize = (int) Math.pow(2, Math.ceil(Math.log(numParticipants) / Math.log(2)));
         int numByes = bracketSize - numParticipants;
-        int numRound1Matches = numParticipants - numByes;
+        int numRound1Participants = numParticipants - numByes;
 
         // --- Create Round 1 ---
         // This round only contains matches that are actually played.
         List<Match> round1Matches = new ArrayList<>();
-        for (int i = 0; i < numRound1Matches / 2; i++) {
+        for (int i = 0; i < numRound1Participants / 2; i++) {
             Match match = new Match();
-            // Pull participants from the end of the shuffled list for round 1
-            match.setParticipant1(shuffledParticipants.remove(shuffledParticipants.size() - 1));
-            match.setParticipant2(shuffledParticipants.remove(shuffledParticipants.size() - 1));
+            // Pull participants from the end of the list for Round 1
+            match.setParticipant1(bracketParticipants.remove(bracketParticipants.size() - 1));
+            match.setParticipant2(bracketParticipants.remove(bracketParticipants.size() - 1));
             round1Matches.add(match);
         }
         if (!round1Matches.isEmpty()) {
@@ -55,10 +57,10 @@ public class Tournament implements Serializable {
         }
 
         // --- Prepare for Subsequent Rounds ---
-        // 'shuffledParticipants' now only contains those with byes.
+        // 'bracketParticipants' now only contains those with byes.
         // Advancing entities can be Participants (with byes) or Matches (from Round 1).
         List<Object> advancingEntities = new ArrayList<>();
-        advancingEntities.addAll(shuffledParticipants);
+        advancingEntities.addAll(bracketParticipants);
         advancingEntities.addAll(round1Matches);
 
         // Loop to build all subsequent rounds from the advancing entities
@@ -84,4 +86,8 @@ public class Tournament implements Serializable {
             advancingEntities.addAll(nextRoundMatches);
         }
     }
+
+    // --- Getters ---
+    public String getTournamentName() { return tournamentName; }
+    public List<List<Match>> getRounds() { return rounds; }
 }
