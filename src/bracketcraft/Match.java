@@ -2,14 +2,15 @@ package bracketcraft;
 
 import java.io.Serializable;
 
-/**
- * Represents a single match in the tournament.
- */
 public class Match implements Serializable {
     private Participant participant1;
     private Participant participant2;
     private Participant winner;
-    private Match nextMatch; // The match in the next round the winner advances to.
+    private Match nextMatch;
+    
+    // --- NEW: Fields to store match scores ---
+    private int score1 = 0;
+    private int score2 = 0;
 
     /**
      * Default constructor for creating an empty match to be filled later.
@@ -19,7 +20,7 @@ public class Match implements Serializable {
     }
 
     /**
-     * -- REFINEMENT: New constructor for instantly creating a match with participants --
+     * New constructor for instantly creating a match with participants.
      * @param p1 The first participant (or seed).
      * @param p2 The second participant (or seed).
      */
@@ -40,4 +41,11 @@ public class Match implements Serializable {
 
     public Match getNextMatch() { return nextMatch; }
     public void setNextMatch(Match nextMatch) { this.nextMatch = nextMatch; }
+    
+    // --- NEW: Getters and Setters for scores ---
+    public int getScore1() { return score1; }
+    public void setScore1(int score1) { this.score1 = score1; }
+
+    public int getScore2() { return score2; }
+    public void setScore2(int score2) { this.score2 = score2; }
 }

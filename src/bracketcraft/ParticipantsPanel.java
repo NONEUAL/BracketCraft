@@ -95,7 +95,7 @@ public class ParticipantsPanel extends JPanel {
     }
 
     private void addParticipantRow() {
-        addParticipantRow("Participant " + (listContainerPanel.getComponentCount() + 1));
+        addParticipantRow("Team " + (listContainerPanel.getComponentCount() + 1));
     }
 
     private void addParticipantRow(String name) {
