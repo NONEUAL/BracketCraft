@@ -20,6 +20,9 @@ public class MainFrame extends javax.swing.JFrame {
     private Timer animationTimer;
     private static final int INFO_PANEL_WIDTH = 350;
     private static final int ANIMATION_DURATION_MS = 200;
+    
+    // --- PHASE 3: State Management Flag ---
+    private boolean isTournamentGenerated = false;
 
     public MainFrame() {
         initComponents();
@@ -65,9 +68,15 @@ public class MainFrame extends javax.swing.JFrame {
     }
 
     public void generateAndShowBracket() {
+        if (isTournamentGenerated) {
+            JOptionPane.showMessageDialog(this, "A tournament is already in progress. Please restart the application to create a new one.", "Tournament Active", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
         List<String> participantNames = participantsPanel.getParticipantNames();
         String bracketName = bracketInfoPanel.getBracketName();
         String sportName = bracketInfoPanel.getSportGameName();
+        String bracketType = bracketInfoPanel.getSelectedBracketType();
 
         if (participantNames.size() < 2) {
             JOptionPane.showMessageDialog(this, "You need at least 2 participants.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -77,26 +86,36 @@ public class MainFrame extends javax.swing.JFrame {
         List<Participant> participants = new ArrayList<>();
         participantNames.forEach(name -> participants.add(new Participant(name)));
         Tournament tournament = new Tournament(bracketName, participants);
-        tournament.generateBracket("Seeded"); // This will be updated in Phase 3
+        
+        tournament.generateBracket(bracketType);
+        
+        if (tournament.getRounds().isEmpty()) {
+            return;
+        }
+
         bracketDisplayPanel.setTournament(tournament);
         bracketDisplayPanel.setSportName(sportName);
+        
+        this.isTournamentGenerated = true; 
+        
         if (isInfoPanelVisible) {
             toggleInfoPanel();
         }
     }
+    
+    public boolean isTournamentGenerated() {
+        return this.isTournamentGenerated;
+    }
 
-    /**
-     * Creates and displays the modal dialog for viewing or editing tournament rules.
-     */
     public void showRulesDialog() {
-        // Create an instance of your RulesDialog, passing 'this' (the MainFrame) as its owner
-        RulesDialog dialog = new RulesDialog(this);
-        // Make the dialog visible to the user
+        RulesDialog dialog = new RulesDialog(this, isTournamentGenerated);
         dialog.setVisible(true);
     }
 
     private void toggleInfoPanel() {
+        // --- THIS IS THE CORRECTED LINE ---
         if (animationTimer != null && animationTimer.isRunning()) return;
+        
         int startWidth = infoContainerPanel.getWidth();
         int targetWidth = isInfoPanelVisible ? 0 : INFO_PANEL_WIDTH;
         isInfoPanelVisible = !isInfoPanelVisible;
@@ -134,15 +153,11 @@ public class MainFrame extends javax.swing.JFrame {
         button.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         button.setMaximumSize(new Dimension(Short.MAX_VALUE, 70));
 
-        // --- Rewritten Action and Hover Logic ---
         button.addActionListener(e -> {
             if ("Back".equals(toolTipText)) {
-                // The "Back" button is ONLY for toggling.
                 toggleInfoPanel();
             } else {
-                // Other buttons switch the view...
                 infoCardLayout.show(infoContainerPanel, toolTipText);
-                // ...and expand the panel if it's currently hidden.
                 if (!isInfoPanelVisible) {
                     toggleInfoPanel();
                 }

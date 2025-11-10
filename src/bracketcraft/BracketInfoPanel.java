@@ -8,6 +8,8 @@ public class BracketInfoPanel extends JPanel {
     private final MainFrame mainFrame;
     private JTextField bracketNameField;
     private JTextField sportGameField;
+    // --- PHASE 3: Field reference for the ComboBox ---
+    private JComboBox<String> bracketTypeComboBox;
 
     public BracketInfoPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
@@ -16,6 +18,11 @@ public class BracketInfoPanel extends JPanel {
     
     public String getBracketName() { return bracketNameField.getText(); }
     public String getSportGameName() { return sportGameField.getText(); }
+    
+    // --- PHASE 3: Getter for the selected bracket type ---
+    public String getSelectedBracketType() {
+        return (String) bracketTypeComboBox.getSelectedItem();
+    }
 
     private void initComponents() {
         setBackground(AppTheme.BACKGROUND_SIDEBAR);
@@ -38,7 +45,10 @@ public class BracketInfoPanel extends JPanel {
         gbc.gridy = y++; bracketNameField = createTextField("Untitled Bracket"); add(bracketNameField, gbc);
 
         gbc.gridy = y++; add(createInputLabel("Bracket Type"), gbc);
-        gbc.gridy = y++; add(createComboBox(new String[]{"Single Elimination", "Double Elimination"}), gbc);
+        gbc.gridy = y++; 
+        // --- PHASE 3: Assign the created combo box to our field ---
+        this.bracketTypeComboBox = createComboBox(new String[]{"Single Elimination", "Double Elimination"}); 
+        add(this.bracketTypeComboBox, gbc);
 
         gbc.gridy = y++; add(createInputLabel("Sport / Game"), gbc);
         gbc.gridy = y++; sportGameField = createTextField(""); add(sportGameField, gbc);
@@ -61,8 +71,9 @@ public class BracketInfoPanel extends JPanel {
             BorderFactory.createLineBorder(AppTheme.BORDER_COLOR),
             BorderFactory.createEmptyBorder(8, 8, 8, 8)));
         rulesButton.setOpaque(true);
-        rulesButton.setContentAreaFilled(false); // Disable default painting
+        rulesButton.setContentAreaFilled(false);
         
+        // This now calls the method in MainFrame, which handles the logic
         rulesButton.addActionListener(e -> mainFrame.showRulesDialog());
         add(rulesButton, gbc);
         
@@ -103,17 +114,13 @@ public class BracketInfoPanel extends JPanel {
         cb.setBackground(AppTheme.BACKGROUND_INPUT);
         cb.setForeground(AppTheme.TEXT_PRIMARY);
         cb.setBorder(BorderFactory.createLineBorder(AppTheme.BORDER_COLOR));
-        
-        // Force opaque rendering
         cb.setOpaque(true);
         
-        // Set UI properties
         UIManager.put("ComboBox.background", AppTheme.BACKGROUND_INPUT);
         UIManager.put("ComboBox.foreground", AppTheme.TEXT_PRIMARY);
         UIManager.put("ComboBox.selectionBackground", AppTheme.BACKGROUND_SIDEBAR_HOVER);
         UIManager.put("ComboBox.selectionForeground", AppTheme.TEXT_PRIMARY);
 
-        // Custom UI to remove the default arrow button and fix background
         cb.setUI(new BasicComboBoxUI() {
             @Override
             protected JButton createArrowButton() {
@@ -133,24 +140,17 @@ public class BracketInfoPanel extends JPanel {
             }
         });
 
-        // Custom renderer for both selected item and dropdown list
         cb.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                
-                // Style the list itself
                 list.setBackground(AppTheme.BACKGROUND_INPUT);
                 list.setSelectionBackground(AppTheme.BACKGROUND_SIDEBAR_HOVER);
                 list.setSelectionForeground(AppTheme.TEXT_PRIMARY);
-                
-                // Always use grey background for normal state
                 setBackground(AppTheme.BACKGROUND_INPUT);
                 setForeground(AppTheme.TEXT_PRIMARY);
                 setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
                 setOpaque(true);
-                
-                // Hover/selection state
                 if (isSelected) {
                     setBackground(AppTheme.BACKGROUND_SIDEBAR_HOVER);
                 }

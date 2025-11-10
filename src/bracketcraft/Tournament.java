@@ -1,14 +1,11 @@
 package bracketcraft;
 
+import javax.swing.JOptionPane;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Holds all data for a tournament and contains the logic for generating
- * a single-elimination bracket based on a chosen seeding option.
- */
 public class Tournament implements Serializable {
     private final String tournamentName;
     private final List<Participant> participants;
@@ -20,55 +17,83 @@ public class Tournament implements Serializable {
         this.rounds = new ArrayList<>();
     }
 
-    public void generateBracket(String seedingOption) {
+    /**
+     * -- PHASE 3: Main Bracket Generation Controller --
+     * Selects the correct bracket generation logic based on the chosen type.
+     * @param bracketType The type of bracket to generate (e.g., "Single Elimination").
+     */
+    public void generateBracket(String bracketType) {
         if (participants == null || participants.size() < 2) return;
         rounds.clear();
 
-        List<Participant> bracketParticipants = new ArrayList<>(participants);
+        switch (bracketType) {
+            case "Single Elimination":
+                generateSingleElimination();
+                break;
+                
+            case "Double Elimination":
+                // Placeholder for future implementation
+                JOptionPane.showMessageDialog(null, "Double Elimination is not yet implemented.", "Coming Soon", JOptionPane.INFORMATION_MESSAGE);
+                break;
 
-        // --- Seeding Logic ---
-        if ("Random".equalsIgnoreCase(seedingOption)) {
-            Collections.shuffle(bracketParticipants);
+            // Add other cases for Round Robin, etc. in the future.
+                
+            default:
+                // Fallback for an unknown type
+                JOptionPane.showMessageDialog(null, "The selected bracket type is not recognized.", "Error", JOptionPane.ERROR_MESSAGE);
+                break;
         }
-        // If "Seeded", we use the list in its provided order (assuming it's pre-sorted).
+    }
+
+    /**
+     * -- PHASE 3: Specific Logic for Single Elimination --
+     * Contains the original logic for creating a single-elimination bracket.
+     */
+    private void generateSingleElimination() {
+        List<Participant> bracketParticipants = new ArrayList<>(participants);
+        // Assuming "Seeded" for now based on ParticipantsPanel order
+        // If you wanted a random option here, you would Collections.shuffle(bracketParticipants);
 
         int numParticipants = bracketParticipants.size();
+        // Calculate the next power of 2 for the bracket size
         int bracketSize = (int) Math.pow(2, Math.ceil(Math.log(numParticipants) / Math.log(2)));
         int numByes = bracketSize - numParticipants;
-        int numRound1Participants = numParticipants - numByes;
+
+        // Participants who get a bye automatically advance.
+        // We pull participants for the first round from the end of the seeded list.
+        List<Participant> round1Players = new ArrayList<>();
+        for (int i = 0; i < (bracketSize - 2 * numByes); i++) {
+             round1Players.add(bracketParticipants.remove(numByes));
+        }
 
         // --- Create Round 1 ---
-        // This round only contains matches that are actually played.
         List<Match> round1Matches = new ArrayList<>();
-        for (int i = 0; i < numRound1Participants / 2; i++) {
+        for (int i = 0; i < round1Players.size() / 2; i++) {
             Match match = new Match();
-            // Pull participants from the end of the list for Round 1
-            match.setParticipant1(bracketParticipants.remove(bracketParticipants.size() - 1));
-            match.setParticipant2(bracketParticipants.remove(bracketParticipants.size() - 1));
+            match.setParticipant1(round1Players.get(i));
+            match.setParticipant2(round1Players.get(round1Players.size() - 1 - i));
             round1Matches.add(match);
         }
-        if (!round1Matches.isEmpty()) {
+         if (!round1Matches.isEmpty()) {
             rounds.add(round1Matches);
         }
 
-        // --- Prepare for Subsequent Rounds ---
         // 'bracketParticipants' now only contains those with byes.
         // Advancing entities can be Participants (with byes) or Matches (from Round 1).
         List<Object> advancingEntities = new ArrayList<>();
         advancingEntities.addAll(bracketParticipants);
         advancingEntities.addAll(round1Matches);
-
-        // Loop to build all subsequent rounds from the advancing entities
+        
+        // Loop to build all subsequent rounds
         while (advancingEntities.size() > 1) {
             List<Match> nextRoundMatches = new ArrayList<>();
             for (int i = 0; i < advancingEntities.size(); i += 2) {
                 Match newMatch = new Match();
-                // Link the first entity (either a bye participant or a previous match)
+                
                 Object entity1 = advancingEntities.get(i);
                 if (entity1 instanceof Participant) newMatch.setParticipant1((Participant) entity1);
                 else ((Match) entity1).setNextMatch(newMatch);
 
-                // Link the second entity
                 Object entity2 = advancingEntities.get(i + 1);
                 if (entity2 instanceof Participant) newMatch.setParticipant2((Participant) entity2);
                 else ((Match) entity2).setNextMatch(newMatch);
@@ -76,11 +101,11 @@ public class Tournament implements Serializable {
                 nextRoundMatches.add(newMatch);
             }
             rounds.add(nextRoundMatches);
-            // The next loop will build from the matches we just created
             advancingEntities.clear();
             advancingEntities.addAll(nextRoundMatches);
         }
     }
+
 
     // --- Getters ---
     public String getTournamentName() { return tournamentName; }

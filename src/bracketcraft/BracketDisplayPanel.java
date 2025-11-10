@@ -51,7 +51,7 @@ public class BracketDisplayPanel extends JPanel {
 
     public void setSportName(String sportName) {
         if (sportName != null && !sportName.trim().isEmpty()) {
-            footerLabel.setText(sportName.toUpperCase() + " |");
+            footerLabel.setText(sportName.toUpperCase() + " ");
         } else {
             footerLabel.setText("");
         }
