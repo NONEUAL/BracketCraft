@@ -45,7 +45,14 @@ public class BracketInfoPanel extends JPanel {
 
         // --- Rules Button ---
         gbc.gridy = y++;
-        JButton rulesButton = new JButton("View/Edit Rules");
+        JButton rulesButton = new JButton("View/Edit Rules") {
+            @Override
+            protected void paintComponent(Graphics g) {
+                g.setColor(getBackground());
+                g.fillRect(0, 0, getWidth(), getHeight());
+                super.paintComponent(g);
+            }
+        };
         rulesButton.setFont(AppTheme.FONT_BUTTON);
         rulesButton.setBackground(AppTheme.BACKGROUND_INPUT);
         rulesButton.setForeground(AppTheme.TEXT_PRIMARY);
@@ -53,10 +60,8 @@ public class BracketInfoPanel extends JPanel {
         rulesButton.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(AppTheme.BORDER_COLOR),
             BorderFactory.createEmptyBorder(8, 8, 8, 8)));
-        
-        // ***** FIX FOR BUTTON BACKGROUND *****
-        // This forces the button to paint the background we assigned.
         rulesButton.setOpaque(true);
+        rulesButton.setContentAreaFilled(false); // Disable default painting
         
         rulesButton.addActionListener(e -> mainFrame.showRulesDialog());
         add(rulesButton, gbc);
@@ -98,40 +103,61 @@ public class BracketInfoPanel extends JPanel {
         cb.setBackground(AppTheme.BACKGROUND_INPUT);
         cb.setForeground(AppTheme.TEXT_PRIMARY);
         cb.setBorder(BorderFactory.createLineBorder(AppTheme.BORDER_COLOR));
+        
+        // Force opaque rendering
+        cb.setOpaque(true);
+        
+        // Set UI properties
+        UIManager.put("ComboBox.background", AppTheme.BACKGROUND_INPUT);
+        UIManager.put("ComboBox.foreground", AppTheme.TEXT_PRIMARY);
+        UIManager.put("ComboBox.selectionBackground", AppTheme.BACKGROUND_SIDEBAR_HOVER);
+        UIManager.put("ComboBox.selectionForeground", AppTheme.TEXT_PRIMARY);
 
         // Custom UI to remove the default arrow button and fix background
         cb.setUI(new BasicComboBoxUI() {
             @Override
             protected JButton createArrowButton() {
-                JButton button = new JButton("\u25BC"); // Unicode for down-triangle
+                JButton button = new JButton("\u25BC");
                 button.setBackground(AppTheme.BACKGROUND_INPUT);
                 button.setForeground(AppTheme.TEXT_SECONDARY);
                 button.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+                button.setOpaque(true);
+                button.setContentAreaFilled(true);
                 return button;
+            }
+            
+            @Override
+            public void paintCurrentValueBackground(Graphics g, Rectangle bounds, boolean hasFocus) {
+                g.setColor(AppTheme.BACKGROUND_INPUT);
+                g.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
             }
         });
 
-        // ***** FIX FOR COMBOBOX BACKGROUND *****
-        // This custom renderer ensures both the selected item view and the
-        // dropdown list are styled correctly.
+        // Custom renderer for both selected item and dropdown list
         cb.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                // This call is crucial for text rendering
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 
-                // Style for both the main view and the dropdown list items
+                // Style the list itself
+                list.setBackground(AppTheme.BACKGROUND_INPUT);
+                list.setSelectionBackground(AppTheme.BACKGROUND_SIDEBAR_HOVER);
+                list.setSelectionForeground(AppTheme.TEXT_PRIMARY);
+                
+                // Always use grey background for normal state
                 setBackground(AppTheme.BACKGROUND_INPUT);
                 setForeground(AppTheme.TEXT_PRIMARY);
-                setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8)); // Consistent padding
+                setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+                setOpaque(true);
                 
-                // Style for hover/selection in the dropdown
+                // Hover/selection state
                 if (isSelected) {
                     setBackground(AppTheme.BACKGROUND_SIDEBAR_HOVER);
                 }
                 return this;
             }
         });
+        
         return cb;
     }
 }
