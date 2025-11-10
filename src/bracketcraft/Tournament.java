@@ -20,11 +20,6 @@ public class Tournament implements Serializable {
         this.rounds = new ArrayList<>();
     }
 
-    /**
-     * Generates the entire bracket structure.
-     * @param seedingOption A string, either "Random" or "Seeded", that determines
-     *                      how the initial matchups are created.
-     */
     public void generateBracket(String seedingOption) {
         if (participants == null || participants.size() < 2) return;
         rounds.clear();
