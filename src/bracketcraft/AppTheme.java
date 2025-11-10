@@ -11,16 +11,16 @@ public class AppTheme {
     private static final Color LIGHT_GREY = new Color(0xA9AEB1);
     private static final Color OFF_WHITE = new Color(0xECEFF1);
     private static final Color VIBRANT_GREEN = new Color(0x61C239);
-
-    // --- Semantic Colors ---
+    
+    // --- Semantic Colors (Mapped for UI components) ---
     public static final Color BACKGROUND_MAIN = SLATE_GREY;
     public static final Color BACKGROUND_SIDEBAR = DARK_CHARCOAL;
-    // NEW: Color for button hover effects
-    public static final Color BACKGROUND_SIDEBAR_HOVER = new Color(0x383e42);
+    // NEW: Color for hover effects on the main sidebar
+    public static final Color BACKGROUND_SIDEBAR_HOVER = new Color(0x3C4449); 
     public static final Color BACKGROUND_INPUT = MEDIUM_GREY;
     public static final Color BORDER_COLOR = LIGHT_GREY;
     public static final Color ACCENT_PRIMARY = VIBRANT_GREEN;
-
+    
     public static final Color TEXT_PRIMARY = OFF_WHITE;
     public static final Color TEXT_SECONDARY = LIGHT_GREY;
     public static final Color TEXT_ACCENT = VIBRANT_GREEN;
