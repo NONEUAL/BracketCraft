@@ -20,9 +20,15 @@ public class MainFrame extends javax.swing.JFrame {
     private Timer animationTimer;
     private static final int INFO_PANEL_WIDTH = 350;
     private static final int ANIMATION_DURATION_MS = 200;
+    
+    private boolean isTournamentGenerated = false;
+    private Tournament currentTournament;
 
     public MainFrame() {
+        this.currentTournament = new Tournament("Untitled Bracket", new ArrayList<>());
         initComponents();
+        // --- This call now works because the components are fully initialized first ---
+        updateLiveBracketPreview();
     }
 
     private void initComponents() {
@@ -30,7 +36,6 @@ public class MainFrame extends javax.swing.JFrame {
         setTitle("BracketCraft");
         setMinimumSize(new Dimension(1280, 720));
         
-        // --- Icon Sidebar ---
         JPanel iconSidebar = new JPanel();
         iconSidebar.setLayout(new BoxLayout(iconSidebar, BoxLayout.Y_AXIS));
         iconSidebar.setBackground(AppTheme.BACKGROUND_SIDEBAR);
@@ -39,10 +44,9 @@ public class MainFrame extends javax.swing.JFrame {
         iconSidebar.add(createNavButton("Participants", "resources/participants_icon.png"));
         iconSidebar.add(Box.createVerticalGlue());
         iconSidebar.add(createNavButton("Settings", "resources/settings_icon.png"));
-        iconSidebar.add(createNavButton("Back", "resources/back_icon.png")); // This is now the toggle
+        iconSidebar.add(createNavButton("Back", "resources/back_icon.png"));
         getContentPane().add(iconSidebar, BorderLayout.WEST);
 
-        // --- Main Content Area ---
         JPanel mainContentArea = new JPanel(new BorderLayout());
         mainContentArea.setBackground(AppTheme.BACKGROUND_MAIN);
         getContentPane().add(mainContentArea, BorderLayout.CENTER);
@@ -51,8 +55,10 @@ public class MainFrame extends javax.swing.JFrame {
         infoContainerPanel = new JPanel(infoCardLayout);
         infoContainerPanel.setPreferredSize(new Dimension(INFO_PANEL_WIDTH, 0));
 
+        // --- All components are created and assigned before any logic is run ---
         bracketInfoPanel = new BracketInfoPanel(this);
-        participantsPanel = new ParticipantsPanel(this);
+        participantsPanel = new ParticipantsPanel(this); 
+        
         infoContainerPanel.add(bracketInfoPanel, "Bracket Information");
         infoContainerPanel.add(participantsPanel, "Participants");
 
@@ -64,28 +70,68 @@ public class MainFrame extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }
 
-    public void generateAndShowBracket() {
+    /**
+     * Generates a temporary bracket preview. Called on any change before the tournament starts.
+     */
+    public void updateLiveBracketPreview() {
+        if (isTournamentGenerated) return;
+
         List<String> participantNames = participantsPanel.getParticipantNames();
-        String bracketName = bracketInfoPanel.getBracketName();
-        String sportName = bracketInfoPanel.getSportGameName();
-
-        if (participantNames.size() < 2) {
-            JOptionPane.showMessageDialog(this, "You need at least 2 participants.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
         List<Participant> participants = new ArrayList<>();
         participantNames.forEach(name -> participants.add(new Participant(name)));
-        Tournament tournament = new Tournament(bracketName, participants);
-        tournament.generateBracket("Seeded");
-        bracketDisplayPanel.setTournament(tournament);
-        bracketDisplayPanel.setSportName(sportName);
+        
+        Tournament previewTournament = new Tournament(bracketInfoPanel.getBracketName(), participants);
+        previewTournament.generateBracket("Single Elimination");
+        
+        bracketDisplayPanel.setTournament(previewTournament);
+        bracketDisplayPanel.setSportName(bracketInfoPanel.getSportGameName());
+    }
+
+    /**
+     * Finalizes and locks the tournament.
+     */
+    public void startTournament() {
+        if (isTournamentGenerated) {
+            JOptionPane.showMessageDialog(this, "The tournament has already started.", "Tournament Active", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        List<String> participantNames = participantsPanel.getParticipantNames();
+        if (participantNames.size() < 2) {
+            JOptionPane.showMessageDialog(this, "You need at least 2 participants to start.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        currentTournament.setTournamentName(bracketInfoPanel.getBracketName());
+        List<Participant> participants = new ArrayList<>();
+        participantNames.forEach(name -> participants.add(new Participant(name)));
+        currentTournament.setParticipants(participants);
+        
+        String bracketType = bracketInfoPanel.getSelectedBracketType();
+        currentTournament.generateBracket(bracketType);
+        
+        if (currentTournament.getRounds().isEmpty()) return;
+
+        bracketDisplayPanel.setTournament(currentTournament);
+        bracketDisplayPanel.setSportName(bracketInfoPanel.getSportGameName());
+        
+        this.isTournamentGenerated = true;
+        participantsPanel.setControlsEnabled(false);
+        bracketInfoPanel.setControlsEnabled(false);
+        
         if (isInfoPanelVisible) {
             toggleInfoPanel();
         }
     }
+    
+    public boolean isTournamentGenerated() {
+        return this.isTournamentGenerated;
+    }
 
-    public void showRulesDialog() { /* Unchanged */ }
+    public void showRulesDialog() {
+        RulesDialog dialog = new RulesDialog(this, isTournamentGenerated, currentTournament);
+        dialog.setVisible(true);
+    }
 
     private void toggleInfoPanel() {
         if (animationTimer != null && animationTimer.isRunning()) return;
@@ -126,15 +172,11 @@ public class MainFrame extends javax.swing.JFrame {
         button.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         button.setMaximumSize(new Dimension(Short.MAX_VALUE, 70));
 
-        // --- Rewritten Action and Hover Logic ---
         button.addActionListener(e -> {
             if ("Back".equals(toolTipText)) {
-                // The "Back" button is ONLY for toggling.
                 toggleInfoPanel();
             } else {
-                // Other buttons switch the view...
                 infoCardLayout.show(infoContainerPanel, toolTipText);
-                // ...and expand the panel if it's currently hidden.
                 if (!isInfoPanelVisible) {
                     toggleInfoPanel();
                 }

@@ -15,7 +15,6 @@ public class AppTheme {
     // --- Semantic Colors (Mapped for UI components) ---
     public static final Color BACKGROUND_MAIN = SLATE_GREY;
     public static final Color BACKGROUND_SIDEBAR = DARK_CHARCOAL;
-    // NEW: Color for hover effects on the main sidebar
     public static final Color BACKGROUND_SIDEBAR_HOVER = new Color(0x3C4449); 
     public static final Color BACKGROUND_INPUT = MEDIUM_GREY;
     public static final Color BORDER_COLOR = LIGHT_GREY;
@@ -26,6 +25,11 @@ public class AppTheme {
     public static final Color TEXT_ACCENT = VIBRANT_GREEN;
     public static final Color TEXT_ON_ACCENT = Color.BLACK;
 
+    // --- NEWLY ADDED: Semantic Colors for the Bracket Display ---
+    public static final Color BACKGROUND_PANEL = DARK_CHARCOAL; // For match boxes
+    public static final Color BRACKET_LINE_COLOR = DARK_CHARCOAL; // For connector lines
+    public static final Color WINNER_ACCENT_BACKGROUND = VIBRANT_GREEN; // For the winner advancement indicator
+    
     // --- Semantic Fonts ---
     public static final Font FONT_H1 = new Font("Segoe UI", Font.BOLD, 18);
     public static final Font FONT_H2 = new Font("Segoe UI", Font.BOLD, 16);
@@ -33,4 +37,7 @@ public class AppTheme {
     public static final Font FONT_BODY_PLAIN = new Font("Segoe UI", Font.PLAIN, 14);
     public static final Font FONT_INPUT_LABEL = new Font("Segoe UI", Font.PLAIN, 12);
     public static final Font FONT_BUTTON = new Font("Segoe UI", Font.BOLD, 14);
+    
+    // --- NEWLY ADDED: Semantic Fonts for the Bracket Display ---
+    public static final Font FONT_BRACKET_HEADER = new Font("Segoe UI", Font.BOLD, 14);
 }
