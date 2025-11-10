@@ -66,10 +66,10 @@ public class ParticipantsPanel extends JPanel {
         generateBracketButton.addActionListener(e -> mainFrame.generateAndShowBracket());
 
         // --- Add some default participants for testing ---
-        addParticipantRow("Team Alpha");
-        addParticipantRow("Team Bravo");
-        addParticipantRow("Team Charlie");
-        addParticipantRow("Team Delta");
+        addParticipantRow("Team 1");
+        addParticipantRow("Team 2");
+        addParticipantRow("Team 3");
+        addParticipantRow("Team 4");
     }
 
     /**
@@ -93,7 +93,7 @@ public class ParticipantsPanel extends JPanel {
 
     /** Adds a new, empty participant row to the list. */
     private void addParticipantRow() {
-        addParticipantRow("Participant " + (listContainerPanel.getComponentCount() + 1));
+        addParticipantRow("Team " + (listContainerPanel.getComponentCount() + 1));
     }
 
     /** Adds a participant row with a predefined name to the list. */
