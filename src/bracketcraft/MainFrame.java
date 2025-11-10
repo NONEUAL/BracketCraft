@@ -77,7 +77,7 @@ public class MainFrame extends javax.swing.JFrame {
         List<Participant> participants = new ArrayList<>();
         participantNames.forEach(name -> participants.add(new Participant(name)));
         Tournament tournament = new Tournament(bracketName, participants);
-        tournament.generateBracket("Seeded");
+        tournament.generateBracket("Seeded"); // This will be updated in Phase 3
         bracketDisplayPanel.setTournament(tournament);
         bracketDisplayPanel.setSportName(sportName);
         if (isInfoPanelVisible) {
@@ -85,7 +85,15 @@ public class MainFrame extends javax.swing.JFrame {
         }
     }
 
-    public void showRulesDialog() { /* Unchanged */ }
+    /**
+     * Creates and displays the modal dialog for viewing or editing tournament rules.
+     */
+    public void showRulesDialog() {
+        // Create an instance of your RulesDialog, passing 'this' (the MainFrame) as its owner
+        RulesDialog dialog = new RulesDialog(this);
+        // Make the dialog visible to the user
+        dialog.setVisible(true);
+    }
 
     private void toggleInfoPanel() {
         if (animationTimer != null && animationTimer.isRunning()) return;
