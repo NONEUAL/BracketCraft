@@ -22,14 +22,13 @@ public class MainFrame extends javax.swing.JFrame {
     private static final int ANIMATION_DURATION_MS = 200;
     
     private boolean isTournamentGenerated = false;
-    
-    // --- REFINEMENT: A single tournament object to hold all data ---
     private Tournament currentTournament;
 
     public MainFrame() {
-        // --- REFINEMENT: Initialize the tournament object immediately ---
         this.currentTournament = new Tournament("Untitled Bracket", new ArrayList<>());
         initComponents();
+        // --- This call now works because the components are fully initialized first ---
+        updateLiveBracketPreview();
     }
 
     private void initComponents() {
@@ -56,8 +55,10 @@ public class MainFrame extends javax.swing.JFrame {
         infoContainerPanel = new JPanel(infoCardLayout);
         infoContainerPanel.setPreferredSize(new Dimension(INFO_PANEL_WIDTH, 0));
 
+        // --- All components are created and assigned before any logic is run ---
         bracketInfoPanel = new BracketInfoPanel(this);
-        participantsPanel = new ParticipantsPanel(this);
+        participantsPanel = new ParticipantsPanel(this); 
+        
         infoContainerPanel.add(bracketInfoPanel, "Bracket Information");
         infoContainerPanel.add(participantsPanel, "Participants");
 
@@ -69,19 +70,38 @@ public class MainFrame extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }
 
-    public void generateAndShowBracket() {
+    /**
+     * Generates a temporary bracket preview. Called on any change before the tournament starts.
+     */
+    public void updateLiveBracketPreview() {
+        if (isTournamentGenerated) return;
+
+        List<String> participantNames = participantsPanel.getParticipantNames();
+        List<Participant> participants = new ArrayList<>();
+        participantNames.forEach(name -> participants.add(new Participant(name)));
+        
+        Tournament previewTournament = new Tournament(bracketInfoPanel.getBracketName(), participants);
+        previewTournament.generateBracket("Single Elimination");
+        
+        bracketDisplayPanel.setTournament(previewTournament);
+        bracketDisplayPanel.setSportName(bracketInfoPanel.getSportGameName());
+    }
+
+    /**
+     * Finalizes and locks the tournament.
+     */
+    public void startTournament() {
         if (isTournamentGenerated) {
-            JOptionPane.showMessageDialog(this, "A tournament is already in progress. Please restart the application to create a new one.", "Tournament Active", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "The tournament has already started.", "Tournament Active", JOptionPane.WARNING_MESSAGE);
             return;
         }
         
         List<String> participantNames = participantsPanel.getParticipantNames();
         if (participantNames.size() < 2) {
-            JOptionPane.showMessageDialog(this, "You need at least 2 participants.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "You need at least 2 participants to start.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
         
-        // --- REFINEMENT: Update the existing tournament object instead of creating a new one ---
         currentTournament.setTournamentName(bracketInfoPanel.getBracketName());
         List<Participant> participants = new ArrayList<>();
         participantNames.forEach(name -> participants.add(new Participant(name)));
@@ -90,13 +110,14 @@ public class MainFrame extends javax.swing.JFrame {
         String bracketType = bracketInfoPanel.getSelectedBracketType();
         currentTournament.generateBracket(bracketType);
         
-        if (currentTournament.getRounds().isEmpty()) {
-            return; // Generation was cancelled or failed (e.g., for an unimplemented type)
-        }
+        if (currentTournament.getRounds().isEmpty()) return;
 
         bracketDisplayPanel.setTournament(currentTournament);
         bracketDisplayPanel.setSportName(bracketInfoPanel.getSportGameName());
-        this.isTournamentGenerated = true; 
+        
+        this.isTournamentGenerated = true;
+        participantsPanel.setControlsEnabled(false);
+        bracketInfoPanel.setControlsEnabled(false);
         
         if (isInfoPanelVisible) {
             toggleInfoPanel();
@@ -107,11 +128,7 @@ public class MainFrame extends javax.swing.JFrame {
         return this.isTournamentGenerated;
     }
 
-    /**
-     * Creates and displays the modal dialog for rules.
-     */
     public void showRulesDialog() {
-        // --- REFINEMENT: Pass the tournament object to the dialog ---
         RulesDialog dialog = new RulesDialog(this, isTournamentGenerated, currentTournament);
         dialog.setVisible(true);
     }

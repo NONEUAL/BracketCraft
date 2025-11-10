@@ -6,10 +6,12 @@ import java.awt.*;
 
 public class BracketInfoPanel extends JPanel {
     private final MainFrame mainFrame;
+    
+    // --- NEW: References to controls that need to be disabled ---
     private JTextField bracketNameField;
     private JTextField sportGameField;
-    // --- PHASE 3: Field reference for the ComboBox ---
     private JComboBox<String> bracketTypeComboBox;
+    private JButton rulesButton;
 
     public BracketInfoPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
@@ -18,10 +20,24 @@ public class BracketInfoPanel extends JPanel {
     
     public String getBracketName() { return bracketNameField.getText(); }
     public String getSportGameName() { return sportGameField.getText(); }
-    
-    // --- PHASE 3: Getter for the selected bracket type ---
     public String getSelectedBracketType() {
         return (String) bracketTypeComboBox.getSelectedItem();
+    }
+    
+    /**
+     * -- NEW: Disables all controls on this panel --
+     * Called by MainFrame when the tournament starts.
+     */
+    public void setControlsEnabled(boolean enabled) {
+        bracketNameField.setEditable(enabled);
+        sportGameField.setEditable(enabled);
+        bracketTypeComboBox.setEnabled(enabled);
+        
+        // Change visuals to indicate disabled state
+        Color bgColor = enabled ? AppTheme.BACKGROUND_INPUT : AppTheme.BACKGROUND_SIDEBAR;
+        bracketNameField.setBackground(bgColor);
+        sportGameField.setBackground(bgColor);
+        bracketTypeComboBox.setBackground(bgColor);
     }
 
     private void initComponents() {
@@ -46,16 +62,14 @@ public class BracketInfoPanel extends JPanel {
 
         gbc.gridy = y++; add(createInputLabel("Bracket Type"), gbc);
         gbc.gridy = y++; 
-        // --- PHASE 3: Assign the created combo box to our field ---
         this.bracketTypeComboBox = createComboBox(new String[]{"Single Elimination", "Double Elimination"}); 
         add(this.bracketTypeComboBox, gbc);
 
         gbc.gridy = y++; add(createInputLabel("Sport / Game"), gbc);
         gbc.gridy = y++; sportGameField = createTextField(""); add(sportGameField, gbc);
 
-        // --- Rules Button ---
         gbc.gridy = y++;
-        JButton rulesButton = new JButton("View/Edit Rules") {
+        this.rulesButton = new JButton("View/Edit Rules") {
             @Override
             protected void paintComponent(Graphics g) {
                 g.setColor(getBackground());
@@ -73,7 +87,6 @@ public class BracketInfoPanel extends JPanel {
         rulesButton.setOpaque(true);
         rulesButton.setContentAreaFilled(false);
         
-        // This now calls the method in MainFrame, which handles the logic
         rulesButton.addActionListener(e -> mainFrame.showRulesDialog());
         add(rulesButton, gbc);
         
