@@ -11,6 +11,23 @@ public class Match implements Serializable {
     private Participant winner;
     private Match nextMatch; // The match in the next round the winner advances to.
 
+    /**
+     * Default constructor for creating an empty match to be filled later.
+     */
+    public Match() {
+        // Default constructor is still needed for creating future-round matches
+    }
+
+    /**
+     * -- REFINEMENT: New constructor for instantly creating a match with participants --
+     * @param p1 The first participant (or seed).
+     * @param p2 The second participant (or seed).
+     */
+    public Match(Participant p1, Participant p2) {
+        this.participant1 = p1;
+        this.participant2 = p2;
+    }
+
     // --- Getters and Setters ---
     public Participant getParticipant1() { return participant1; }
     public void setParticipant1(Participant p) { this.participant1 = p; }

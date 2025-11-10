@@ -21,10 +21,14 @@ public class MainFrame extends javax.swing.JFrame {
     private static final int INFO_PANEL_WIDTH = 350;
     private static final int ANIMATION_DURATION_MS = 200;
     
-    // --- PHASE 3: State Management Flag ---
     private boolean isTournamentGenerated = false;
+    
+    // --- REFINEMENT: A single tournament object to hold all data ---
+    private Tournament currentTournament;
 
     public MainFrame() {
+        // --- REFINEMENT: Initialize the tournament object immediately ---
+        this.currentTournament = new Tournament("Untitled Bracket", new ArrayList<>());
         initComponents();
     }
 
@@ -33,7 +37,6 @@ public class MainFrame extends javax.swing.JFrame {
         setTitle("BracketCraft");
         setMinimumSize(new Dimension(1280, 720));
         
-        // --- Icon Sidebar ---
         JPanel iconSidebar = new JPanel();
         iconSidebar.setLayout(new BoxLayout(iconSidebar, BoxLayout.Y_AXIS));
         iconSidebar.setBackground(AppTheme.BACKGROUND_SIDEBAR);
@@ -42,10 +45,9 @@ public class MainFrame extends javax.swing.JFrame {
         iconSidebar.add(createNavButton("Participants", "resources/participants_icon.png"));
         iconSidebar.add(Box.createVerticalGlue());
         iconSidebar.add(createNavButton("Settings", "resources/settings_icon.png"));
-        iconSidebar.add(createNavButton("Back", "resources/back_icon.png")); // This is now the toggle
+        iconSidebar.add(createNavButton("Back", "resources/back_icon.png"));
         getContentPane().add(iconSidebar, BorderLayout.WEST);
 
-        // --- Main Content Area ---
         JPanel mainContentArea = new JPanel(new BorderLayout());
         mainContentArea.setBackground(AppTheme.BACKGROUND_MAIN);
         getContentPane().add(mainContentArea, BorderLayout.CENTER);
@@ -74,28 +76,26 @@ public class MainFrame extends javax.swing.JFrame {
         }
         
         List<String> participantNames = participantsPanel.getParticipantNames();
-        String bracketName = bracketInfoPanel.getBracketName();
-        String sportName = bracketInfoPanel.getSportGameName();
-        String bracketType = bracketInfoPanel.getSelectedBracketType();
-
         if (participantNames.size() < 2) {
             JOptionPane.showMessageDialog(this, "You need at least 2 participants.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
+        
+        // --- REFINEMENT: Update the existing tournament object instead of creating a new one ---
+        currentTournament.setTournamentName(bracketInfoPanel.getBracketName());
         List<Participant> participants = new ArrayList<>();
         participantNames.forEach(name -> participants.add(new Participant(name)));
-        Tournament tournament = new Tournament(bracketName, participants);
+        currentTournament.setParticipants(participants);
         
-        tournament.generateBracket(bracketType);
+        String bracketType = bracketInfoPanel.getSelectedBracketType();
+        currentTournament.generateBracket(bracketType);
         
-        if (tournament.getRounds().isEmpty()) {
-            return;
+        if (currentTournament.getRounds().isEmpty()) {
+            return; // Generation was cancelled or failed (e.g., for an unimplemented type)
         }
 
-        bracketDisplayPanel.setTournament(tournament);
-        bracketDisplayPanel.setSportName(sportName);
-        
+        bracketDisplayPanel.setTournament(currentTournament);
+        bracketDisplayPanel.setSportName(bracketInfoPanel.getSportGameName());
         this.isTournamentGenerated = true; 
         
         if (isInfoPanelVisible) {
@@ -107,15 +107,17 @@ public class MainFrame extends javax.swing.JFrame {
         return this.isTournamentGenerated;
     }
 
+    /**
+     * Creates and displays the modal dialog for rules.
+     */
     public void showRulesDialog() {
-        RulesDialog dialog = new RulesDialog(this, isTournamentGenerated);
+        // --- REFINEMENT: Pass the tournament object to the dialog ---
+        RulesDialog dialog = new RulesDialog(this, isTournamentGenerated, currentTournament);
         dialog.setVisible(true);
     }
 
     private void toggleInfoPanel() {
-        // --- THIS IS THE CORRECTED LINE ---
         if (animationTimer != null && animationTimer.isRunning()) return;
-        
         int startWidth = infoContainerPanel.getWidth();
         int targetWidth = isInfoPanelVisible ? 0 : INFO_PANEL_WIDTH;
         isInfoPanelVisible = !isInfoPanelVisible;

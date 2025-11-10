@@ -5,50 +5,55 @@ import java.awt.*;
 
 public class RulesDialog extends JDialog {
 
-    private JTextArea rulesTextArea;
+    private final JTextArea rulesTextArea;
+    private final Tournament tournament; // Reference to the main tournament object
 
     /**
-     * -- PHASE 3: Updated Constructor --
-     * Creates the Rules Dialog, dynamically setting its state based on whether the tournament has started.
+     * -- REFINED CONSTRUCTOR --
+     * Now accepts the tournament object to read from and save to.
      * @param owner The parent frame.
      * @param isReadOnly If true, the text area will be non-editable.
+     * @param tournament The tournament object holding the rules data.
      */
-    public RulesDialog(Frame owner, boolean isReadOnly) {
+    public RulesDialog(Frame owner, boolean isReadOnly, Tournament tournament) {
         super(owner, "Tournament Rules", true);
+        this.tournament = tournament; // Store the reference
+        
         setSize(500, 400);
         setLocationRelativeTo(owner);
         setLayout(new BorderLayout(10, 10));
         getContentPane().setBackground(AppTheme.BACKGROUND_SIDEBAR);
 
-        JLabel titleLabel = new JLabel("", SwingConstants.CENTER); // Text set below
+        JLabel titleLabel = new JLabel("", SwingConstants.CENTER);
         titleLabel.setFont(AppTheme.FONT_H1);
         titleLabel.setForeground(AppTheme.TEXT_PRIMARY);
         titleLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         add(titleLabel, BorderLayout.NORTH);
 
-        rulesTextArea = new JTextArea("1. All matches are Best of 3.\n2. No substitutions allowed.\n3. Organizer's decision is final.");
+        rulesTextArea = new JTextArea();
+        // --- REFINEMENT: Load rules from the tournament object ---
+        rulesTextArea.setText(tournament.getRules());
         rulesTextArea.setFont(AppTheme.FONT_BODY_PLAIN);
         rulesTextArea.setForeground(AppTheme.TEXT_PRIMARY);
         rulesTextArea.setLineWrap(true);
         rulesTextArea.setWrapStyleWord(true);
         rulesTextArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        
         JScrollPane scrollPane = new JScrollPane(rulesTextArea);
         scrollPane.setBorder(null);
         add(scrollPane, BorderLayout.CENTER);
 
-        JButton actionButton = new JButton(); // Text set below
+        JButton actionButton = new JButton();
         actionButton.setFont(AppTheme.FONT_BUTTON);
-        actionButton.addActionListener(e -> dispose());
         
-        // --- PHASE 3: Conditional State Logic ---
         if (isReadOnly) {
             titleLabel.setText("View Rules");
             actionButton.setText("Close");
             rulesTextArea.setEditable(false);
-            // Use a slightly different background to visually indicate it's read-only.
             rulesTextArea.setBackground(AppTheme.BACKGROUND_SIDEBAR); 
             actionButton.setBackground(AppTheme.BACKGROUND_INPUT);
             actionButton.setForeground(AppTheme.TEXT_PRIMARY);
+            actionButton.addActionListener(e -> dispose());
         } else {
             titleLabel.setText("View/Edit Rules");
             actionButton.setText("Save & Close");
@@ -56,7 +61,11 @@ public class RulesDialog extends JDialog {
             rulesTextArea.setBackground(AppTheme.BACKGROUND_INPUT);
             actionButton.setBackground(AppTheme.ACCENT_PRIMARY);
             actionButton.setForeground(AppTheme.TEXT_ON_ACCENT);
-            // In the future, you would add the save logic here before dispose().
+            // --- REFINEMENT: Save rules before closing ---
+            actionButton.addActionListener(e -> {
+                tournament.setRules(rulesTextArea.getText());
+                dispose();
+            });
         }
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
