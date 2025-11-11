@@ -62,12 +62,12 @@ public class ParticipantsPanel extends JPanel {
         shuffleButton.addActionListener(e -> shuffleParticipants());
         startTournamentButton.addActionListener(e -> mainFrame.startTournament());
 
-        // --- FIXED: Add default participants without triggering a premature update ---
+        // --- Add default participants without triggering a premature update ---
         listContainerPanel.add(new ParticipantRowPanel("Team 1"));
         listContainerPanel.add(new ParticipantRowPanel("Team 2"));
         listContainerPanel.add(new ParticipantRowPanel("Team 3"));
         listContainerPanel.add(new ParticipantRowPanel("Team 4"));
-        renumberRows(); // Manually renumber after the initial add.
+        renumberRows(); // Manually renumber after the adding (Team 5.) Somthing like tha
     }
 
     public List<String> getParticipantNames() {
@@ -104,7 +104,7 @@ public class ParticipantsPanel extends JPanel {
         renumberRows();
         listContainerPanel.revalidate();
         listContainerPanel.repaint();
-        mainFrame.updateLiveBracketPreview(); // LIVE SYNC
+        mainFrame.updateLiveBracketPreview(); // LIVE SYNC (para masarap)
     }
     
     private void removeParticipantRow(ParticipantRowPanel row) {
@@ -112,7 +112,7 @@ public class ParticipantsPanel extends JPanel {
         renumberRows();
         listContainerPanel.revalidate();
         listContainerPanel.repaint();
-        mainFrame.updateLiveBracketPreview(); // LIVE SYNC
+        mainFrame.updateLiveBracketPreview(); 
     }
     
     private void renumberRows() {
@@ -135,7 +135,7 @@ public class ParticipantsPanel extends JPanel {
                 }
             }
         }
-        mainFrame.updateLiveBracketPreview(); // LIVE SYNC
+        mainFrame.updateLiveBracketPreview();
     }
 
     private void stylePrimaryButton(JButton button) {
@@ -260,7 +260,7 @@ public class ParticipantsPanel extends JPanel {
                 if (draggedPanel != null) {
                     draggedPanel.setBorder(defaultBorder);
                     renumberRows();
-                    mainFrame.updateLiveBracketPreview(); // LIVE SYNC
+                    mainFrame.updateLiveBracketPreview(); 
                 }
                 draggedPanel = null;
             }

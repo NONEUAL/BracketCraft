@@ -73,7 +73,7 @@ public class BracketDisplayPanel extends JPanel {
     }
 
     public void setSportName(String sportName) {
-        footerLabel.setText(sportName != null && !sportName.trim().isEmpty() ? sportName.toUpperCase() + " |" : "");
+        footerLabel.setText(sportName != null && !sportName.trim().isEmpty() ? sportName.toUpperCase() + " " : "");
     }
     
     private void addInteractionListeners() {
@@ -162,7 +162,7 @@ public class BracketDisplayPanel extends JPanel {
 
         List<List<Match>> rounds = tournament.getRounds();
         
-        // Use consistent base spacing
+        // Use consistent base spacing (for that good shit) 
         int baseSpacing = MATCH_HEIGHT + VERTICAL_GAP;
         
         // Calculate positions left to right (round 0 is leftmost)
@@ -179,7 +179,7 @@ public class BracketDisplayPanel extends JPanel {
                     // First round: evenly spaced
                     y = matchIndex * baseSpacing;
                 } else {
-                    // Later rounds: center perfectly between the two feeding matches
+                    // Later rounds: center perfectly between the two feeding matches 
                     List<Match> prevRound = rounds.get(roundIndex - 1);
                     int feeder1Index = matchIndex * 2;
                     int feeder2Index = matchIndex * 2 + 1;
@@ -188,7 +188,7 @@ public class BracketDisplayPanel extends JPanel {
                         Point pos1 = matchPositions.get(prevRound.get(feeder1Index));
                         Point pos2 = matchPositions.get(prevRound.get(feeder2Index));
                         if (pos1 != null && pos2 != null) {
-                            // Perfect center: midpoint of the two match centers
+                            // centering that shi: midpoint of the two match centers
                             int center1 = pos1.y + MATCH_HEIGHT / 2;
                             int center2 = pos2.y + MATCH_HEIGHT / 2;
                             y = (center1 + center2) / 2 - MATCH_HEIGHT / 2;
@@ -215,18 +215,18 @@ public class BracketDisplayPanel extends JPanel {
         g2d.setStroke(new BasicStroke(2.5f));
         g2d.setColor(new Color(90, 95, 100));
         
-        // Draw cleaner connector lines
+        // Draw connector lines 
         g2d.drawLine(x1, y1, midX, y1);
         g2d.drawLine(midX, y1, midX, y2);
         g2d.drawLine(midX, y2, x2, y2);
     }
 
     private void drawMatch(Graphics2D g2d, Match match, Point pos) {
-        // Draw match background with cleaner color
+        // Draw match background with color
         g2d.setColor(new Color(55, 60, 65));
         g2d.fill(new RoundRectangle2D.Float(pos.x, pos.y, MATCH_WIDTH, MATCH_HEIGHT, 10, 10));
         
-        // Draw clearer border
+        // Draw border 
         g2d.setColor(new Color(75, 80, 85));
         g2d.setStroke(new BasicStroke(2));
         g2d.draw(new RoundRectangle2D.Float(pos.x, pos.y, MATCH_WIDTH, MATCH_HEIGHT, 10, 10));
@@ -240,7 +240,7 @@ public class BracketDisplayPanel extends JPanel {
         int slotHeight = MATCH_HEIGHT / 2;
         boolean isWinner = (p != null && p.equals(winner));
         
-        // Use bright white text for better readability
+        // white text para sa bulag
         g2d.setColor(new Color(245, 245, 245));
         Font nameFont = new Font("Segoe UI", Font.PLAIN, 15);
         g2d.setFont(nameFont);
@@ -248,11 +248,11 @@ public class BracketDisplayPanel extends JPanel {
         String name = (p != null) ? p.getName() : "---";
         g2d.drawString(name, pos.x + 18, slotY + slotHeight / 2 + 6);
         
-        // Draw score with better visibility
+        // Draw score (still need to update)
         g2d.setFont(new Font("Segoe UI", Font.BOLD, 15));
         g2d.drawString(String.valueOf(score), pos.x + MATCH_WIDTH - 35, slotY + slotHeight / 2 + 6);
         
-        // Draw clearer divider line between participants
+        // Draw divider line between participants
         if (slotIndex == 0) {
             g2d.setColor(new Color(85, 90, 95));
             g2d.setStroke(new BasicStroke(1.5f));

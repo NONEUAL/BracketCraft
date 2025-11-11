@@ -4,16 +4,16 @@ import javax.swing.*;
 import javax.swing.plaf.basic.BasicComboBoxUI;
 import java.awt.*;
 
-public class BracketInfoPanel extends JPanel {
+public class BracketPanel extends JPanel {
     private final MainFrame mainFrame;
     
-    // --- NEW: References to controls that need to be disabled ---
+    // --- References to controls that need to be disabled ---
     private JTextField bracketNameField;
     private JTextField sportGameField;
     private JComboBox<String> bracketTypeComboBox;
     private JButton rulesButton;
 
-    public BracketInfoPanel(MainFrame mainFrame) {
+    public BracketPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
         initComponents();
     }
@@ -25,7 +25,7 @@ public class BracketInfoPanel extends JPanel {
     }
     
     /**
-     * -- NEW: Disables all controls on this panel --
+     * -- Disables all controls on this panel --
      * Called by MainFrame when the tournament starts.
      */
     public void setControlsEnabled(boolean enabled) {

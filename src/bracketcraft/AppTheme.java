@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.Font;
 
 public class AppTheme {
-    // --- The Raw Color Palette ---
+    // --- Color Palette ---
     private static final Color DARK_CHARCOAL = new Color(0x2D3336);
     private static final Color SLATE_GREY = new Color(0x4C5357);
     private static final Color MEDIUM_GREY = new Color(0x6E7579);
@@ -25,7 +25,7 @@ public class AppTheme {
     public static final Color TEXT_ACCENT = VIBRANT_GREEN;
     public static final Color TEXT_ON_ACCENT = Color.BLACK;
 
-    // --- NEWLY ADDED: Semantic Colors for the Bracket Display ---
+    // --- Semantic Colors for the Bracket Display ---
     public static final Color BACKGROUND_PANEL = DARK_CHARCOAL; // For match boxes
     public static final Color BRACKET_LINE_COLOR = DARK_CHARCOAL; // For connector lines
     public static final Color WINNER_ACCENT_BACKGROUND = VIBRANT_GREEN; // For the winner advancement indicator
@@ -38,6 +38,6 @@ public class AppTheme {
     public static final Font FONT_INPUT_LABEL = new Font("Segoe UI", Font.PLAIN, 12);
     public static final Font FONT_BUTTON = new Font("Segoe UI", Font.BOLD, 14);
     
-    // --- NEWLY ADDED: Semantic Fonts for the Bracket Display ---
+    // --- Semantic Fonts for the Bracket Display ---
     public static final Font FONT_BRACKET_HEADER = new Font("Segoe UI", Font.BOLD, 14);
 }
