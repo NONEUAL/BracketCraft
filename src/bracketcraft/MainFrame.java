@@ -27,7 +27,7 @@ public class MainFrame extends javax.swing.JFrame {
     public MainFrame() {
         this.currentTournament = new Tournament("Untitled Bracket", new ArrayList<>());
         initComponents();
-        // --- This call now works because the components are fully initialized first ---
+        
         updateLiveBracketPreview();
     }
 
