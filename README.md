@@ -34,7 +34,7 @@ This project is a native NetBeans project.
         > *   Copy the generated token and paste it into the "Password" field in NetBeans.
 
 4.  Click **Next**.
-5.  Select the branch you want to work on usually `main` but choice `Group-Project`. Click **Next**.
+5.  Select the branch you want to work on usually `main` but choice `development`. Click **Next**.
 6.  Choose a local folder on your computer to save the project. Keep the "Clone Name" and "Checkout Branch" as they are.
 7.  Click **Finish**.
 
