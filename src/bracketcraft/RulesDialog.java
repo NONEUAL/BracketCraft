@@ -6,7 +6,7 @@ import java.awt.*;
 public class RulesDialog extends JDialog {
 
     private final JTextArea rulesTextArea;
-    private final Tournament tournament; // Reference to the main tournament object
+    private final Tournament tournament; 
 
     /**
      * -- REFINED CONSTRUCTOR --
@@ -17,7 +17,7 @@ public class RulesDialog extends JDialog {
      */
     public RulesDialog(Frame owner, boolean isReadOnly, Tournament tournament) {
         super(owner, "Tournament Rules", true);
-        this.tournament = tournament; // Store the reference
+        this.tournament = tournament; // Store the reference ( remove if have database :< )
         
         setSize(500, 400);
         setLocationRelativeTo(owner);
@@ -31,7 +31,7 @@ public class RulesDialog extends JDialog {
         add(titleLabel, BorderLayout.NORTH);
 
         rulesTextArea = new JTextArea();
-        // --- REFINEMENT: Load rules from the tournament object ---
+        // --- Load rules from the tournament object ---
         rulesTextArea.setText(tournament.getRules());
         rulesTextArea.setFont(AppTheme.FONT_BODY_PLAIN);
         rulesTextArea.setForeground(AppTheme.TEXT_PRIMARY);
@@ -61,7 +61,7 @@ public class RulesDialog extends JDialog {
             rulesTextArea.setBackground(AppTheme.BACKGROUND_INPUT);
             actionButton.setBackground(AppTheme.ACCENT_PRIMARY);
             actionButton.setForeground(AppTheme.TEXT_ON_ACCENT);
-            // --- REFINEMENT: Save rules before closing ---
+            // --- Save rules before closing ---
             actionButton.addActionListener(e -> {
                 tournament.setRules(rulesTextArea.getText());
                 dispose();

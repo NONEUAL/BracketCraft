@@ -8,7 +8,7 @@ public class Match implements Serializable {
     private Participant winner;
     private Match nextMatch;
     
-    // --- NEW: Fields to store match scores ---
+    // --- Fields to store match scores ---
     private int score1 = 0;
     private int score2 = 0;
 
@@ -16,7 +16,7 @@ public class Match implements Serializable {
      * Default constructor for creating an empty match to be filled later.
      */
     public Match() {
-        // Default constructor is still needed for creating future-round matches
+        // Default constructor is still needed for creating future-round matches 
     }
 
     /**
@@ -42,7 +42,7 @@ public class Match implements Serializable {
     public Match getNextMatch() { return nextMatch; }
     public void setNextMatch(Match nextMatch) { this.nextMatch = nextMatch; }
     
-    // --- NEW: Getters and Setters for scores ---
+    // --- Getters and Setters for scores ---
     public int getScore1() { return score1; }
     public void setScore1(int score1) { this.score1 = score1; }
 
