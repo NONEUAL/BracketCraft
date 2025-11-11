@@ -20,7 +20,7 @@ public class Tournament implements Serializable {
     }
 
     /**
-     * Main Bracket Generation Controller.
+     * Main Bracket Generation.
      */
     public void generateBracket(String bracketType) {
         if (participants == null || participants.size() < 2) return;
@@ -32,7 +32,16 @@ public class Tournament implements Serializable {
                 break;
                 
             case "Double Elimination":
-                JOptionPane.showMessageDialog(null, "Double Elimination is not yet implemented.", "Coming Soon", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Mag hintay ka jan.", "Coming Soon", JOptionPane.INFORMATION_MESSAGE);
+                break;
+            
+            // Natamad pako i lagay sa UI
+            case "Round Robin":
+                JOptionPane.showMessageDialog(null, "Mag hintay ka jan.", "Coming Soon", JOptionPane.INFORMATION_MESSAGE);
+                break;
+                
+            case "Group Stage":
+                JOptionPane.showMessageDialog(null, "Mag hintay ka jan.", "Coming Soon", JOptionPane.INFORMATION_MESSAGE);
                 break;
                 
             default:
@@ -42,9 +51,8 @@ public class Tournament implements Serializable {
     }
 
     /**
-     * -- NEW & CORRECTED SEEDING LOGIC --
-     * Generates a standard single-elimination bracket. The seeding is now predictable:
-     * #1 seed is on one side, #2 is on the other. #1 plays the winner of #4 vs #5, etc.
+     * -- SEEDING LOGIC --
+     * Generates a standard single-elimination bracket.
      */
     private void generateSingleElimination() {
         List<Participant> seededParticipants = new ArrayList<>(this.participants);
@@ -90,12 +98,12 @@ public class Tournament implements Serializable {
                 Match m = new Match(p1, p2);
                 firstRoundMatches.add(m);
                 advancingEntities.add(m);
-            } else if (p1 != null) { // p1 has a bye
+            } else if (p1 != null) { // p1 has a bye (AKA free Win)
                 advancingEntities.add(p1);
             } else if (p2 != null) { // p2 has a bye
                 advancingEntities.add(p2);
             }
-            // If both are null (in a very large empty bracket), do nothing.
+            // If both are null (in a very large empty bracket),just do nothing.
         }
         if (!firstRoundMatches.isEmpty()) {
             this.rounds.add(firstRoundMatches);

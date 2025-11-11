@@ -16,7 +16,6 @@ public class Participant implements Serializable {
         this.name = name;
     }
 
-    // toString() is called by UI components like JButtons to display the name.
     @Override
     public String toString() {
         return name;

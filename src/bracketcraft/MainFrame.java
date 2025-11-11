@@ -13,7 +13,7 @@ public class MainFrame extends javax.swing.JFrame {
     private CardLayout infoCardLayout;
     private JPanel infoContainerPanel;
     private ParticipantsPanel participantsPanel;
-    private BracketInfoPanel bracketInfoPanel;
+    private BracketPanel bracketPanel;
     private BracketDisplayPanel bracketDisplayPanel;
 
     private boolean isInfoPanelVisible = true;
@@ -55,11 +55,10 @@ public class MainFrame extends javax.swing.JFrame {
         infoContainerPanel = new JPanel(infoCardLayout);
         infoContainerPanel.setPreferredSize(new Dimension(INFO_PANEL_WIDTH, 0));
 
-        // --- All components are created and assigned before any logic is run ---
-        bracketInfoPanel = new BracketInfoPanel(this);
+        bracketPanel = new BracketPanel(this);
         participantsPanel = new ParticipantsPanel(this); 
         
-        infoContainerPanel.add(bracketInfoPanel, "Bracket Information");
+        infoContainerPanel.add(bracketPanel, "Bracket Information");
         infoContainerPanel.add(participantsPanel, "Participants");
 
         bracketDisplayPanel = new BracketDisplayPanel();
@@ -71,7 +70,7 @@ public class MainFrame extends javax.swing.JFrame {
     }
 
     /**
-     * Generates a temporary bracket preview. Called on any change before the tournament starts.
+     * Generates a temporary bracket preview.
      */
     public void updateLiveBracketPreview() {
         if (isTournamentGenerated) return;
@@ -80,15 +79,15 @@ public class MainFrame extends javax.swing.JFrame {
         List<Participant> participants = new ArrayList<>();
         participantNames.forEach(name -> participants.add(new Participant(name)));
         
-        Tournament previewTournament = new Tournament(bracketInfoPanel.getBracketName(), participants);
+        Tournament previewTournament = new Tournament(bracketPanel.getBracketName(), participants);
         previewTournament.generateBracket("Single Elimination");
         
         bracketDisplayPanel.setTournament(previewTournament);
-        bracketDisplayPanel.setSportName(bracketInfoPanel.getSportGameName());
+        bracketDisplayPanel.setSportName(bracketPanel.getSportGameName());
     }
 
     /**
-     * Finalizes and locks the tournament.
+     * Finalizes and locks the tournament. (Just ifs) 
      */
     public void startTournament() {
         if (isTournamentGenerated) {
@@ -102,22 +101,22 @@ public class MainFrame extends javax.swing.JFrame {
             return;
         }
         
-        currentTournament.setTournamentName(bracketInfoPanel.getBracketName());
+        currentTournament.setTournamentName(bracketPanel.getBracketName());
         List<Participant> participants = new ArrayList<>();
         participantNames.forEach(name -> participants.add(new Participant(name)));
         currentTournament.setParticipants(participants);
         
-        String bracketType = bracketInfoPanel.getSelectedBracketType();
+        String bracketType = bracketPanel.getSelectedBracketType();
         currentTournament.generateBracket(bracketType);
         
         if (currentTournament.getRounds().isEmpty()) return;
 
         bracketDisplayPanel.setTournament(currentTournament);
-        bracketDisplayPanel.setSportName(bracketInfoPanel.getSportGameName());
+        bracketDisplayPanel.setSportName(bracketPanel.getSportGameName());
         
         this.isTournamentGenerated = true;
         participantsPanel.setControlsEnabled(false);
-        bracketInfoPanel.setControlsEnabled(false);
+        bracketPanel.setControlsEnabled(false);
         
         if (isInfoPanelVisible) {
             toggleInfoPanel();
